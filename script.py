@@ -52,7 +52,7 @@ time.sleep(5)
 # lazy-load all clinicians (8641)
 element = driver.find_element_by_id("advanced_search_wrap")
 driver.execute_script("arguments[0].scrollIntoView();", element)
-time.sleep(500)
+time.sleep(900)
 
 # Selenium hands the page source to Beautiful Soup
 all_soup = BeautifulSoup(driver.page_source, 'lxml')
@@ -61,7 +61,9 @@ all_soup = BeautifulSoup(driver.page_source, 'lxml')
 clinician_links = []
 for clinician_link in all_soup.find_all('li', class_=['one', 'two', 'three']):
     clinician_links.append(clinician_link.h2.a['href'])
-print('Number of Clinicians: ', len(clinician_links))
+
+print('Number of Clinicians:', len(clinician_links))
+print('Time it took to lazy-load:', datetime.now() - start_time)
 
 # scrape info about each clinician
 for link in clinician_links:
@@ -110,15 +112,20 @@ for link in clinician_links:
 driver.quit()
 
 # open a .csv file
-outfile = open('LSVT_BIG.csv','w', newline='')
+outfile = open('LSVT_BIG.csv','w', newline='', encoding='utf-8')
 writer = csv.writer(outfile)
 
 # insert rows per clinician
 for clinician in clinicians:
-    writer.writerow(clinician)
+    try:
+        writer.writerow(clinician)
+    except:
+        print("Write Error: ", clinician)
+        raise
+        continue
 
 # close the .csv file
 outfile.close()
 
-print(datetime.now() - start_time)
+print('Time it took to run script:', datetime.now() - start_time)
 print("DONE")
